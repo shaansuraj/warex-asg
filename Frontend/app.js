@@ -274,27 +274,12 @@ async function loadAllOrders() {
 }
 
 /**
- * Fetch hourly updates (mock or real).
- * You can adapt this to call an endpoint that returns the cron job summary if you have one.
+ * Fetch hourly updates 
  */
 async function loadHourlyUpdates() {
-  // If you have an endpoint for hourly summaries, call it here.
-  // For demonstration, we’ll just mock some data or rely on console logs.
   const body = document.getElementById('hourly-updates-body');
   body.innerHTML = '';
 
-  // Example: If your backend stores hourly summaries in a separate collection:
-  // const token = localStorage.getItem('token');
-  // const response = await fetch(`${BASE_URL}/api/admin/hourly-summary`, {
-  //   headers: { Authorization: `Bearer ${token}` }
-  // });
-  // const summaries = await response.json();
-
-  // Mock data for demonstration:
-  const summaries = [
-    { timestamp: '2025-02-28T15:00:00Z', total_orders: 10, total_amount: 500000 },
-    { timestamp: '2025-02-28T16:00:00Z', total_orders: 7, total_amount: 350000 }
-  ];
 
   summaries.forEach(s => {
     const row = document.createElement('tr');
