@@ -1,0 +1,144 @@
+/* style.css */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f7f8fa;
+  }
+  
+  .container {
+    max-width: 400px;
+    margin: 60px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  h2 {
+    margin-top: 0;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  input, textarea, select, button {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  
+  button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  header {
+    background-color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  header h1 {
+    margin: 0;
+  }
+  
+  header nav button {
+    margin-left: 10px;
+  }
+  
+  .dashboard {
+    display: flex;
+  }
+  
+  aside {
+    width: 200px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+  }
+  
+  aside ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  aside li {
+    border-bottom: 1px solid #ddd;
+  }
+  
+  aside li a {
+    display: block;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+  }
+  
+  aside li a:hover {
+    background: #f0f0f0;
+  }
+  
+  main {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+  }
+  
+  table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  table th {
+    background: #f2f2f2;
+  }
+  
+  .notifications {
+    position: relative;
+  }
+  
+  .notif-dropdown {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 999;
+  }
+  
+  .notif-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .notif-item strong {
+    color: #007bff;
+  }
+  

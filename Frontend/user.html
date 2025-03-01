@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1 id="user-greeting">Welcome, User</h1>
+    <nav>
+      <button id="logout-btn">Logout</button>
+    </nav>
+  </header>
+
+  <div class="dashboard">
+    <aside>
+      <ul>
+        <li><a href="#" id="show-customers">Customers</a></li>
+        <li><a href="#" id="show-skus">SKUs</a></li>
+        <li><a href="#" id="show-orders">My Orders</a></li>
+        <li><a href="#" id="create-order">Create Order</a></li>
+      </ul>
+    </aside>
+
+    <main>
+      <!-- Create Customer Section -->
+      <section id="customers-section" class="hidden">
+        <h2>Create a New Customer</h2>
+        <div class="form-group">
+          <label for="cust-name">Name of the Customer</label>
+          <input type="text" id="cust-name" placeholder="John Doe" />
+        </div>
+        <div class="form-group">
+          <label for="cust-address">Billing Address</label>
+          <textarea id="cust-address" placeholder="123 Main St"></textarea>
+        </div>
+        <button id="add-customer-btn">Add Customer</button>
+
+        <hr />
+
+        <h2>All My Customers</h2>
+        <table id="customers-table">
+          <thead>
+            <tr>
+              <th>Customer ID</th>
+              <th>Name</th>
+              <th>Address</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Create SKU Section -->
+      <section id="skus-section" class="hidden">
+        <h2>Add a New SKU/Item</h2>
+        <div class="form-group">
+          <label for="sku-name">SKU Name/code</label>
+          <input type="text" id="sku-name" placeholder="Laptop" />
+        </div>
+        <div class="form-group">
+          <label for="sku-uom">UOM</label>
+          <input type="text" id="sku-uom" placeholder="pcs" />
+        </div>
+        <div class="form-group">
+          <label for="sku-tax">Tax Rate</label>
+          <input type="number" id="sku-tax" placeholder="18" />
+        </div>
+        <button id="add-sku-btn">Add SKU</button>
+
+        <hr />
+
+        <h2>All My SKUs</h2>
+        <table id="skus-table">
+          <thead>
+            <tr>
+              <th>SKU ID</th>
+              <th>Name</th>
+              <th>UOM</th>
+              <th>Tax Rate</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- My Orders Section -->
+      <section id="orders-section" class="hidden">
+        <h2>My Orders</h2>
+        <table id="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Order Date</th>
+              <th>Customer</th>
+              <th>SKU</th>
+              <th>Quantity</th>
+              <th>Rate</th>
+              <th>Tax</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Create Order Section -->
+      <section id="create-order-section" class="hidden">
+        <h2>Create New Order</h2>
+        <div class="form-group">
+          <label for="order-customer">Select Customer</label>
+          <select id="order-customer"></select>
+        </div>
+        <div class="form-group">
+          <label for="order-sku">Select SKU/item</label>
+          <select id="order-sku"></select>
+        </div>
+        <div class="form-group">
+          <label for="order-quantity">Quantity</label>
+          <input type="number" id="order-quantity" placeholder="1" />
+        </div>
+        <div class="form-group">
+          <label for="order-rate">Rate</label>
+          <input type="number" id="order-rate" placeholder="50000" />
+        </div>
+        <button id="create-order-btn">Create Order</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // On page load, check if user is logged in
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+      if (!token || role !== 'user') {
+        // Not authorized
+        window.location.href = 'index.html';
+        return;
+      }
+      document.getElementById('user-greeting').innerText = `Welcome, ${localStorage.getItem('username') || 'User'}`;
+
+      // Set up UI event listeners
+      setupUserDashboard();
+    });
+
+    function setupUserDashboard() {
+      // Show/hide sections
+      const customersSection = document.getElementById('customers-section');
+      const skusSection = document.getElementById('skus-section');
+      const ordersSection = document.getElementById('orders-section');
+      const createOrderSection = document.getElementById('create-order-section');
+
+      document.getElementById('show-customers').addEventListener('click', async () => {
+        hideAllSections();
+        customersSection.classList.remove('hidden');
+        await loadCustomers();
+      });
+
+      document.getElementById('show-skus').addEventListener('click', async () => {
+        hideAllSections();
+        skusSection.classList.remove('hidden');
+        await loadSKUs();
+      });
+
+      document.getElementById('show-orders').addEventListener('click', async () => {
+        hideAllSections();
+        ordersSection.classList.remove('hidden');
+        await loadOrders();
+      });
+
+      document.getElementById('create-order').addEventListener('click', async () => {
+        hideAllSections();
+        createOrderSection.classList.remove('hidden');
+        // Load dropdown data
+        await populateOrderDropdowns();
+      });
+
+      // Add customer
+      document.getElementById('add-customer-btn').addEventListener('click', async () => {
+        const name = document.getElementById('cust-name').value;
+        const address = document.getElementById('cust-address').value;
+        if (!name || !address) {
+          alert('Please fill in all fields.');
+          return;
+        }
+        try {
+          await createCustomer(name, address);
+          alert('Customer created successfully.');
+          await loadCustomers();
+        } catch (err) {
+          alert('Error creating customer: ' + err.message);
+        }
+      });
+
+      // Add SKU
+      document.getElementById('add-sku-btn').addEventListener('click', async () => {
+        const skuName = document.getElementById('sku-name').value;
+        const skuUom = document.getElementById('sku-uom').value;
+        const skuTax = document.getElementById('sku-tax').value;
+        if (!skuName || !skuUom || !skuTax) {
+          alert('Please fill in all fields.');
+          return;
+        }
+        try {
+          await createSKU(skuName, skuUom, parseFloat(skuTax));
+          alert('SKU created successfully.');
+          await loadSKUs();
+        } catch (err) {
+          alert('Error creating SKU: ' + err.message);
+        }
+      });
+
+      // Create order
+      document.getElementById('create-order-btn').addEventListener('click', async () => {
+        const customerId = document.getElementById('order-customer').value;
+        const skuId = document.getElementById('order-sku').value;
+        const quantity = parseFloat(document.getElementById('order-quantity').value);
+        const rate = parseFloat(document.getElementById('order-rate').value);
+
+        if (!customerId || !skuId || !quantity || !rate) {
+          alert('Please fill in all fields for order creation.');
+          return;
+        }
+        try {
+          await createOrder(customerId, skuId, quantity, rate);
+          alert('Order created successfully.');
+        } catch (err) {
+          alert('Error creating order: ' + err.message);
+        }
+      });
+
+      // Logout
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = 'index.html';
+      });
+    }
+
+    function hideAllSections() {
+      document.querySelectorAll('section').forEach(sec => sec.classList.add('hidden'));
+    }
+  </script>
+</body>
+</html>

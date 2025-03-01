@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Socket.io client for real-time notifications -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1 id="admin-greeting">Welcome, Admin</h1>
+    <nav>
+      <div class="notifications">
+        <button id="notif-btn">Notifications</button>
+        <div id="notif-dropdown" class="notif-dropdown hidden">
+          <!-- Notifications will appear here -->
+        </div>
+      </div>
+      <button id="logout-btn">Logout</button>
+    </nav>
+  </header>
+
+  <div class="dashboard">
+    <aside>
+      <ul>
+        <li><a href="#" id="show-all-orders">Order History</a></li>
+        <li><a href="#" id="show-hourly-updates">Hourly Update</a></li>
+      </ul>
+    </aside>
+
+    <main>
+      <!-- All Orders Section -->
+      <section id="admin-orders-section" class="hidden">
+        <h2>Order History</h2>
+        <table id="admin-orders-table">
+          <thead>
+            <tr>
+              <th>Order No.</th>
+              <th>Order Date</th>
+              <th>Used Salesman</th>
+              <th>Customer</th>
+              <th>SKU</th>
+              <th>Quantity</th>
+              <th>UOM</th>
+              <th>Rate</th>
+              <th>Tax</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Hourly Updates Section -->
+      <section id="hourly-updates-section" class="hidden">
+        <h2>Hourly Update</h2>
+        <table id="hourly-updates-table">
+          <thead>
+            <tr>
+              <th>Time Stamp</th>
+              <th># of Orders</th>
+              <th>Total Order Amount</th>
+            </tr>
+          </thead>
+          <tbody id="hourly-updates-body"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let socket;
+    let notifications = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+      if (!token || role !== 'admin') {
+        // Not authorized
+        window.location.href = 'index.html';
+        return;
+      }
+      document.getElementById('admin-greeting').innerText = `Welcome, ${localStorage.getItem('username') || 'Admin'}`;
+
+      // Initialize the admin dashboard
+      setupAdminDashboard();
+
+      // Initialize Socket.io for notifications
+      socket = io('http://localhost:4000');
+      socket.on('connect', () => {
+        console.log('Connected to WebSocket server:', socket.id);
+      });
+      socket.on('adminNotification', (data) => {
+        console.log('Received admin notification:', data);
+        notifications.unshift(data);
+        renderNotifications();
+      });
+    });
+
+    function setupAdminDashboard() {
+      // Show/hide sections
+      const adminOrdersSection = document.getElementById('admin-orders-section');
+      const hourlyUpdatesSection = document.getElementById('hourly-updates-section');
+
+      document.getElementById('show-all-orders').addEventListener('click', async () => {
+        hideAllSections();
+        adminOrdersSection.classList.remove('hidden');
+        await loadAllOrders();
+      });
+
+      document.getElementById('show-hourly-updates').addEventListener('click', async () => {
+        hideAllSections();
+        hourlyUpdatesSection.classList.remove('hidden');
+         // fetch hourly of updates
+        await loadHourlyUpdates();
+      });
+
+      // Notifications dropdown
+      const notifBtn = document.getElementById('notif-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifBtn.addEventListener('click', () => {
+        notifDropdown.classList.toggle('hidden');
+      });
+
+      // Logout
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = 'index.html';
+      });
+    }
+
+    function hideAllSections() {
+      document.querySelectorAll('section').forEach(sec => sec.classList.add('hidden'));
+    }
+
+    function renderNotifications() {
+      const notifDropdown = document.getElementById('notif-dropdown');
+      notifDropdown.innerHTML = '';
+      notifications.forEach((notif, index) => {
+        const div = document.createElement('div');
+        div.classList.add('notif-item');
+        div.innerHTML = `
+          <strong>${notif.message}</strong>
+          Order ID: ${notif.order_id} <br/>
+          Salesman: ${notif.user} <br/>
+          Customer: ${notif.customer} <br/>
+          SKU: ${notif.sku} <br/>
+          Amount: ${notif.total_amount} <br/>
+          Time: ${notif.timestamp}
+        `;
+        notifDropdown.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

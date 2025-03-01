@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.io Admin Notification Test</title>
+  <!-- Include Socket.io client script from CDN -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #notifications {
+      margin-top: 20px;
+    }
+    .notification {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .notification strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Socket.io Notification Test</h1>
+  <div id="notifications">
+    <!-- Notifications will be appended here -->
+  </div>
+
+  <script>
+    // Connect to the Socket.io server running on localhost:4000
+    const socket = io('http://localhost:4000');
+
+    // Helper function to display a notification on the page
+    function addNotification(title, data) {
+      const notificationsDiv = document.getElementById('notifications');
+      const notificationElem = document.createElement('div');
+      notificationElem.classList.add('notification');
+      notificationElem.innerHTML = `<strong>${title}</strong><pre>${JSON.stringify(data, null, 2)}</pre>`;
+      notificationsDiv.appendChild(notificationElem);
+    }
+
+    // Listen for connection event
+    socket.on('connect', () => {
+      console.log('Connected to Socket.io server with id:', socket.id);
+      addNotification('Connected', { socketId: socket.id });
+    });
+
+    // Listen for admin notifications
+    socket.on('adminNotification', (data) => {
+      console.log('Received admin notification:', data);
+      addNotification('Admin Notification', data);
+    });
+
+    // Listen for generic messages
+    socket.on('message', (data) => {
+      console.log('Received a message:', data);
+      addNotification('Message', data);
+    });
+
+    // Listen for errors
+    socket.on('error', (error) => {
+      console.error('Socket encountered error:', error);
+      addNotification('Error', error);
+    });
+
+    // Listen for disconnection event
+    socket.on('disconnect', () => {
+      console.log('Disconnected from Socket.io server');
+      addNotification('Disconnected', {});
+    });
+  </script>
+</body>
+</html>
